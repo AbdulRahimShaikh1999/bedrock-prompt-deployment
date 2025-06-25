@@ -1,0 +1,41 @@
+name: On Merge to Main with Approval
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  wait-for-approval:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for manual approval
+        uses: hmarr/auto-approve-action@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-to-prod:
+    needs: wait-for-approval
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://your-prod-endpoint.com
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      DEPLOY_ENV: prod
+      S3_BUCKET_PROD: ${{ secrets.S3_BUCKET_PROD }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: pip install boto3 jinja2
+
+      - name: Run Bedrock prompt and upload
+        run: python process_prompt.py

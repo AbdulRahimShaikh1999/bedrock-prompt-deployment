@@ -1,0 +1,1 @@
+Write a friendly welcome message for {{ name }} who just joined the {{ course_name }} course. Their instructor is {{ instructor_name }}.
